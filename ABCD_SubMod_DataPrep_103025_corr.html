@@ -7228,7 +7228,11 @@ env_master_full = left_join(env_master, demo_select)</code></pre>
 <div id="include-other-covars" class="section level1">
 <h1>Include other covars</h1>
 <pre class="r"><code># some other covars
-motion = read.csv(&quot;../abcd-data-release-5.0/core/imaging/mri_y_qc_motion.csv&quot;)
+motion = read.csv(&quot;../abcd-data-release-5.0/core/imaging/mri_y_qc_motion.csv&quot;) %&gt;%
+  filter(!eventname==&quot;4_year_follow_up_y_arm_1&quot;) %&gt;% select(src_subject_id, eventname, rsfmri_meanmotion) %&gt;% 
+  pivot_wider(names_from = eventname, values_from = c(rsfmri_meanmotion)) %&gt;%
+  rename_with(~ paste0(&quot;rsfmri_meanmotion_&quot;, .), -src_subject_id)
+
 mriinfo = read.csv(&quot;../abcd-data-release-5.0/core/imaging/mri_y_adm_info.csv&quot;)
 otherdemo = read.csv(&quot;../abcd-data-release-5.0/core/abcd-general/abcd_y_lt.csv&quot;)
 
@@ -7368,7 +7372,7 @@ weights = read.csv(&quot;../abcd-data-release-5.0/core/abcd-general/abcd_p_demo.
 weights$weights = ((weights$acs_raked_propensity_score - min(weights$acs_raked_propensity_score)) / 
                       (max(weights$acs_raked_propensity_score) - min(weights$acs_raked_propensity_score)))
 
-othercovars = left_join(weights, motion %&gt;% filter(eventname==&quot;baseline_year_1_arm_1&quot;) %&gt;% select(src_subject_id, rsfmri_meanmotion))</code></pre>
+othercovars = left_join(weights, motion)</code></pre>
 <pre><code>## Joining with `by = join_by(src_subject_id)`</code></pre>
 <pre class="r"><code>othercovars = left_join(othercovars, mriinfo %&gt;% filter(eventname==&quot;baseline_year_1_arm_1&quot;) %&gt;% select(src_subject_id, mri_info_manufacturer))</code></pre>
 <pre><code>## Joining with `by = join_by(src_subject_id)`</code></pre>
